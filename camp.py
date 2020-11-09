@@ -10,19 +10,39 @@ import time
 
 def write_csv(data):
     keys = data[0].keys()
-    with open('outfile.csv', 'w', newline='') as outfile:
+    with open('alaska.csv', 'w', newline='') as outfile:
         writer = csv.DictWriter(outfile, keys)
         writer.writeheader()
         writer.writerows(data)
 
+
 # handle the presence of multiple phone number and check that for other fields
 def get_camp_data(camp_div):
     camp_data = {}
-    camp_data['name'] = camp_div.find('strong').get_text().strip()
-    address = camp_div.find(class_='col-sm-4 ng-binding').get_text().strip().split('\n')
-    camp_data['address'] = ' '.join([addre.strip() for addre in address])
-    camp_data['telephone'] = camp_div.find('a', attrs={'class':'ng-binding'})['href'].split(':')[-1]
+    name = camp_div.find('strong').get_text().strip()
+    if name:
+        camp_data['name'] = name
+    else:
+        camp_data['name'] = ''
+    address = camp_div.find(
+        class_='col-sm-4 ng-binding').get_text().strip().split('\n')
+    address = ' '.join([addre.strip() for addre in address])
+    if address:
+        camp_data['address'] = address
+    else:
+        camp_data['address'] = ''
+    try:
+        telephone = camp_div.find(
+            'a', attrs={'class': 'ng-binding'})['href'].split(':')[-1]
+        if telephone:
+            camp_data['telephone'] = telephone
+        else:
+            camp_data['telephone'] = ''
+    except:
+        pass
+
     return camp_data
+
 
 def get_camp_page_data(soup):
     page_data = []
@@ -34,9 +54,9 @@ def get_camp_page_data(soup):
 
 if __name__ == '__main__':
     all_data = []
-    driver = webdriver.Chrome()
-    driver.get('https://www.rvusa.com/rv-parks-campgrounds/California-6')
-    time.sleep(5)
+    driver = webdriver.Firefox()
+    driver.get('https://www.rvusa.com/rv-parks-campgrounds/Alaska-2')
+    time.sleep(15)
     while True:
         try:
             time.sleep(5)
@@ -53,5 +73,5 @@ if __name__ == '__main__':
         except TimeoutException:
             driver.quit()
             break
-    
+
     write_csv(all_data)
